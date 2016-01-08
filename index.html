@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>GOAP test</title>
+        <script src="state.js"></script>
+        <script src="action.js"></script>
+        <script src="agent.js"></script>
+        <script src="world.js"></script>
+        <script src="planner.js"></script>
+        <script src="lib/phaser.min.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+
+    "use strict";
+
+    window.onload = function() {
+        let world = new World();
+        let miner1 = world.agent(Miner)
+
+        let plan = Planner.compute(miner1, 'hasFood', true)
+
+        /*
+        var size = 20;
+        var tileSize = 32;
+
+        var game = new Phaser.Game(size*tileSize, size*tileSize, Phaser.AUTO, '', { preload: preload, create: create });
+        //game.physics.startSystem(Phaser.Physics.ARCADE);
+
+        var grid = new Array(size);
+        for (var i = 0; i < size; ++i)
+            grid[i] = new Array(size);
+        grid[3][3] = 1;
+        grid[15][5] = 1;
+        grid[9][17] = 1;
+
+        function preload () {
+            game.load.spritesheet('sheet', 'spritesheet.png', tileSize, tileSize);
+        }
+
+        function create () {
+
+            var groundLayer = game.add.group();
+            for (var y = 0; y < size; ++y)
+                for (var x = 0; x < size; ++x) {
+                    var tile = game.add.sprite(x*tileSize, y*tileSize, 'sheet', grid[x][y]);
+                    groundLayer.add(tile);
+                }
+
+            var guy = game.add.sprite(50, 50, 'sheet', 3);
+        }*/
+
+    };
+
+    </script>
+
+    </body>
+</html>
