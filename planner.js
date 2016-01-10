@@ -1,30 +1,151 @@
 "use strict";
 
 class Planner {
-    static compute(agent, goalName, goalValue) {
+    static compute(agent, goal) {
 
-        let actions = agent.actions.slice();
+        // Build a graph containing the different paths of action
+        var graph = Planner.buildGraph(agent, goal);
 
-        let state = new State();
-        state.merge(agent.state);
-        state.merge(agent.world.state);
+        // Look for the shortest path from current state to goal
+        let aStar = graph.elements().aStar({
+            root: '.start',
+            goal: '.goal',
+            directed: true
+        });
+        aStar.path.select();
 
-        return Planner.search(actions, state, goalName, goalValue);
+        return new Plan(aStar.path);
     }
 
-    static search(actions, state, goalName, goalValue) {
+    static buildGraph(agent, goal) {
 
-        if (state[goalName] === goalValue)
-            return;
+        let nodes = [];
+        let edges = [];
 
-        for (let i = actions.length - 1; i >= 0; --i) {
-            let action = actions[i];
+        // Add the starting state
+        let start = new State(agent.state, agent.world.state);
+        nodes.push({
+            data: {
+                id: start.toString(),
+                name: 'START',
+                state: start
+            },
+            classes: 'start'
+        });
 
-            if (action.possible(state)) {
-                /*let next = new State(state);
-                action.applyEffects(next);
-                search(actions, next, goalName, goalValue)*/
-            }
+        // Recursive function that will compute the graph
+        let build = (state, actions) => {
+
+            // From the current state, try all available actions
+            actions.forEach(action => {
+
+                // Check that the current state match the
+                // preconditions of the action
+                if (action.matches(state)) {
+
+                    // Compute the next state and put the state/action
+                    // in the graph as a node/edge pair
+                    let next = new State(state).apply(action);
+
+                    nodes.push({data: {
+                        id: next.toString(),
+                        state: next
+                    }});
+
+                    edges.push({data: {
+                        id: `${state.toString()} -> ${next.toString()}`,
+                        name: action.toString(),
+                        source: state.toString(),
+                        target: next.toString(),
+                        directed: true,
+                        action: action
+                    }});
+
+                    // Remove the applied action to avoid infinite cycles
+                    actions = actions.slice();
+                    actions.splice(actions.indexOf(action), 1)
+
+                    // Stop if the goal is reached...
+                    if (next.contains(goal))
+                        return;
+
+                    // ... or continue building paths towards the goal
+                    build(next, actions);
+                }
+            });
         }
+
+        build(start, agent.actions);
+
+        // Add the goal state and connect it to the nodes
+        // that satisfy it.
+        nodes.forEach(node => {
+            if (node.data.state.contains(goal))
+                edges.push({
+                    data: {
+                        source: node.data.state.toString(),
+                        target: 'goal',
+                        directed: true
+                    }
+                });
+        });
+
+        nodes.push({
+            data: {
+                id: 'goal',
+                name: 'GOAL',
+                state: goal
+            },
+            classes: 'goal'
+        });
+
+        // Setup the graph
+        let graph = cytoscape({
+            container: document.querySelector('#graph'),
+            layout: {
+                name: 'springy',
+                repulsion: 300
+            },
+            style: [{
+                selector: '.start, .goal',
+                style: {
+                    'label': 'data(name)',
+                    'background-color': 'chartreuse',
+                    'font-size': 15
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'label': edge => edge.data('action') !== undefined ? edge.data('action').toString() : '',
+                    'font-size': 15,
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'edge-text-rotation': 'autorotate',
+                    'color': 'grey',
+                    'target-arrow-shape': 'triangle'
+                }
+            },
+            {
+                selector: ':selected',
+                style: {
+                    'line-color': 'gold',
+                    'target-arrow-color': 'gold',
+                    'background-color': 'gold'
+                }
+            }],
+            elements: {
+                nodes: nodes,
+                edges: edges
+            }
+        });
+
+        graph.nodes().qtip({
+            content: function() { return this.data('state').toString() },
+            show: {event: 'mouseover'},
+            hide: {event: 'mouseout'}
+        });
+
+        return graph;
     }
 }

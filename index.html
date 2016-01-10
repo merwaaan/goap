@@ -2,55 +2,89 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>GOAP test</title>
+        <title>Goal-Oriented Action Planning</title>
+
         <script src="state.js"></script>
         <script src="action.js"></script>
         <script src="agent.js"></script>
         <script src="world.js"></script>
         <script src="planner.js"></script>
+        <script src="plan.js"></script>
+
         <script src="lib/phaser.min.js"></script>
+        <script src="lib/springy.js"></script>
+        <script src="lib/cytoscape.min.js"></script>
+        <script src="lib/cytoscape-springy.js"></script>
+        <script src="lib/cytoscape-springy.js"></script>
+        <script src="lib/jquery-2.2.0.min.js"></script>
+        <script src="lib/jquery.qtip.min.js"></script>
+        <script src="lib/cytoscape-qtip.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="lib/jquery.qtip.min.css">
+        <style>
+        body {
+            font-size: 85%;
+        }
+        #summary {
+            width: 80%;
+            text-align: justify;
+        }
+        #graph {
+            height: 500px;
+            width: 500px;
+        }
+        </style>
     </head>
     <body>
+
+    <div id="summary">
+        <h1>Goal-Oriented Action Planning (GOAP)</h1>
+
+        <p>GOAP is an AI technique for building a plan of action to be executed by an agent, starting from its <b>current state</b> and leading to a <b>goal state</b>. The state of the agent is a set of labels (eg. <i>isHungry</i>, <i>hasMoney</i>, ...). The agent is given a set of actions (eg. <i>BuyFood</i>, ...) that each have <b>preconditions</b> stating which state is required to conduct the action (eg. <i>hasMoney</i>) as well as <b>effects</b> stating how it will alter the agent's state (eg. <i>~isHungry</i> ∧ <i>~hasMoney</i>).</p>
+
+        <p>We obtain a plan by building a directed graph in which nodes represent states and edges represent actions. Two states are connected by an action if the effects of the first one match the preconditions of the second one. Several paths can lead to the goal state and we look for the shortest one using a search algorithm such as A*. Different costs can be associated with the actions so that various plans will be produced depending on the state of the agent and the context (distance, threat proximity, ...). Although the structure of the produced graph is similar to state machines or behavior trees, the graph only exists briefly when a new plan must be decided. Only the shortest path (a linear sequence of action) persists and it is then executed step by step.</p>
+
+        <p>In the demo below, agents just live their lives peacefully and eat when they are hungry. The state of an agent contains the following attributes: <i>isHungry</i>, <i>hasIngredients</i>, <i>hasMoney</i>. Several actions are available: <i>GetIngredients</i>, <i>CookFood</i> (requires ingredients), <i>Mine</i> (gives minerals), <i>SellMinerals</i> (remove minerals, gives money) and <i>BuyFood</i> (requires money, gives food). A high-level module chooses the current goal of each agent depending on its internal state (hunger). A plan of action is then computed with GOAP and executed. TODO profiles</p>
+
+        <h4>Benefits TODO</h4>
+        <ul>
+            <li>Clean -- Contrarily to state machines that quickly become an unmanageable mess tangled in transitions, GOAP actions are neatly isolated. They don't know directly about each other since their relationships are expressed in terms of preconditions and effects on the agent's state.</li>
+            <li>Variety -- Agents naturally plan their paths of action to reach a given goal and this can often be done in different manners as long as the goal is satisfied thus diverse and unexpected plans may emerge.</li>
+            <li>Modulable -- It is easy to design different profiles by equipping agents with different sets of actions. Actions can can also be added/removed dynamically to sporadically provide temporary capabilities (eg. temporary bonus).</li>
+        </ul>
+
+        <h5>Limitations/questions TODO</h2>
+        <ul>
+            <li>Parallel actions -- </li>
+            <li>Coordinated actions -- </li>
+            <li>Complex states -- </li>
+        </ul>
+
+        <h5>References TODO</h2>
+        <ul>
+            <li>Orkin</li>
+            <li>Tomb Raider</li>
+        </ul>
+    </div>
+
+    <div id="game"></div>
+    <div id="graph"></div>
 
     <script type="text/javascript">
 
     "use strict";
 
     window.onload = function() {
-        let world = new World();
-        let miner1 = world.agent(Miner)
 
-        let plan = Planner.compute(miner1, 'hasFood', true)
+        new World((world) => {
 
-        /*
-        var size = 20;
-        var tileSize = 32;
+            let guy = world.agent(Test);
 
-        var game = new Phaser.Game(size*tileSize, size*tileSize, Phaser.AUTO, '', { preload: preload, create: create });
-        //game.physics.startSystem(Phaser.Physics.ARCADE);
+            let goal = new State();
+            goal['hasFood'] = true;
 
-        var grid = new Array(size);
-        for (var i = 0; i < size; ++i)
-            grid[i] = new Array(size);
-        grid[3][3] = 1;
-        grid[15][5] = 1;
-        grid[9][17] = 1;
-
-        function preload () {
-            game.load.spritesheet('sheet', 'spritesheet.png', tileSize, tileSize);
-        }
-
-        function create () {
-
-            var groundLayer = game.add.group();
-            for (var y = 0; y < size; ++y)
-                for (var x = 0; x < size; ++x) {
-                    var tile = game.add.sprite(x*tileSize, y*tileSize, 'sheet', grid[x][y]);
-                    groundLayer.add(tile);
-                }
-
-            var guy = game.add.sprite(50, 50, 'sheet', 3);
-        }*/
+            guy.plan = Planner.compute(guy, goal);
+        });
 
     };
 
