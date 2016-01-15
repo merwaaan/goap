@@ -1,7 +1,11 @@
 "use strict";
 
 class Plan {
-    constructor(path) {
+    constructor(agent, goal, path) {
+
+        this.agent = agent;
+        this.final = goal;
+
         this.actions = path
             .map(element => element.data('action'))
             .filter(element => element !== undefined);
@@ -23,8 +27,20 @@ class Plan {
             this.next();
     }
 
+    started() {
+        return this.index >= 0;
+    }
+
     over() {
         return this.index >= this.actions.length;
+    }
+
+    start() {
+        console.log(`[${this.agent.toString()}] Starting plan: ${this.actions.map(a => a.toString()).join(' -> ')}`);
+    }
+
+    exit() {
+        console.log(`[${this.agent.toString()}] Plan completed`);
     }
 
     next() {
@@ -34,7 +50,7 @@ class Plan {
         ++this.index;
 
         if (this.index < this.actions.length) {
-            console.log('Entering ' + this.actions[this.index].toString());
+            console.log(`[${this.agent.toString()}] Entering ${this.actions[this.index].toString()}`);
             this.actions[this.index].enter();
         }
     }

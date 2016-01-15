@@ -12,10 +12,12 @@
         <script src="plan.js"></script>
 
         <script src="lib/phaser.min.js"></script>
-        <script src="lib/springy.js"></script>
+
         <script src="lib/cytoscape.min.js"></script>
-        <script src="lib/cytoscape-springy.js"></script>
-        <script src="lib/cytoscape-springy.js"></script>
+
+        <script src="lib/dagre.min.js"></script>
+        <script src="lib/cytoscape-dagre.js"></script>
+
         <script src="lib/jquery-2.2.0.min.js"></script>
         <script src="lib/jquery.qtip.min.js"></script>
         <script src="lib/cytoscape-qtip.js"></script>
@@ -23,15 +25,15 @@
         <link rel="stylesheet" type="text/css" href="lib/jquery.qtip.min.css">
         <style>
         body {
-            font-size: 85%;
+            font-size: 90%;
         }
         #summary {
             width: 80%;
             text-align: justify;
         }
-        #graph {
+        .graph {
             height: 500px;
-            width: 500px;
+            width: 800px;
         }
         </style>
     </head>
@@ -40,35 +42,37 @@
     <div id="summary">
         <h1>Goal-Oriented Action Planning (GOAP)</h1>
 
-        <p>GOAP is an AI technique for building a plan of action to be executed by an agent, starting from its <b>current state</b> and leading to a <b>goal state</b>. The state of the agent is a set of labels (eg. <i>isHungry</i>, <i>hasMoney</i>, ...). The agent is given a set of actions (eg. <i>BuyFood</i>, ...) that each have <b>preconditions</b> stating which state is required to conduct the action (eg. <i>hasMoney</i>) as well as <b>effects</b> stating how it will alter the agent's state (eg. <i>~isHungry</i> ∧ <i>~hasMoney</i>).</p>
+        <p>GOAP is an AI technique for building a plan of action to be executed by an agent, starting from its <b>current state</b> and leading to a <b>goal state</b>. The state of the agent is a set of labels (eg. <i>isHungry</i>, <i>hasMoney</i>, ...). The agent is given a set of actions (eg. <i>BuyFood</i>) that each have <b>preconditions</b> stating which state is required to conduct the action (eg. <i>hasMoney</i>) as well as <b>effects</b> stating how it will alter the agent's state (eg. <i>~isHungry</i> ∧ <i>~hasMoney</i>).</p>
 
-        <p>We obtain a plan by building a directed graph in which nodes represent states and edges represent actions. Two states are connected by an action if the effects of the first one match the preconditions of the second one. Several paths can lead to the goal state and we look for the shortest one using a search algorithm such as A*. Different costs can be associated with the actions so that various plans will be produced depending on the state of the agent and the context (distance, threat proximity, ...). Although the structure of the produced graph is similar to state machines or behavior trees, the graph only exists briefly when a new plan must be decided. Only the shortest path (a linear sequence of action) persists and it is then executed step by step.</p>
+        <p>We obtain a plan by building a directed graph in which nodes represent states and edges represent actions. Two states are connected by an action if the effects of the first one match the preconditions of the second one. Several paths can lead to the goal state and we look for the shortest one using a search algorithm such as A*. Different costs can be associated with the actions so that various plans will be produced depending on the state of the agent and the context (distance, threat proximity, ...). Although the structure of the produced graph is similar to state machines or behavior trees, the graph only exists briefly when a new plan must be decided. Only the shortest path (a linear sequence of action) persists and it is then executed step by step by the agent until completion.</p>
 
-        <p>In the demo below, agents just live their lives peacefully and eat when they are hungry. The state of an agent contains the following attributes: <i>isHungry</i>, <i>hasIngredients</i>, <i>hasMoney</i>. Several actions are available: <i>GetIngredients</i>, <i>CookFood</i> (requires ingredients), <i>Mine</i> (gives minerals), <i>SellMinerals</i> (remove minerals, gives money) and <i>BuyFood</i> (requires money, gives food). A high-level module chooses the current goal of each agent depending on its internal state (hunger). A plan of action is then computed with GOAP and executed. TODO profiles</p>
+        <p>In the demo below, agents just live their lives peacefully and eat when they are hungry. The state of an agent contains the following attributes: <i>isHungry</i>, <i>hasIngredients</i>, <i>hasMoney</i>. Several actions are available: <i>GetIngredients</i>, <i>CookFood</i> (requires ingredients), <i>Mine</i> (gives minerals), <i>SellMinerals</i> (remove minerals, gives money) and <i>BuyFood</i> (requires money, gives food). A high-level module chooses the current goal of each agent depending on its internal state (hunger). A plan of action is then computed with GOAP and executed. There are three agents with different action sets: a miner (mines, sells his wares, buy food), a cook (gets ingredient, cook), and a polyvalent agent with all the actions.</p>
 
-        <h4>Benefits TODO</h4>
+        <h4>Benefits</h4>
         <ul>
-            <li>Clean -- Contrarily to state machines that quickly become an unmanageable mess tangled in transitions, GOAP actions are neatly isolated. They don't know directly about each other since their relationships are expressed in terms of preconditions and effects on the agent's state.</li>
-            <li>Variety -- Agents naturally plan their paths of action to reach a given goal and this can often be done in different manners as long as the goal is satisfied thus diverse and unexpected plans may emerge.</li>
-            <li>Modulable -- It is easy to design different profiles by equipping agents with different sets of actions. Actions can can also be added/removed dynamically to sporadically provide temporary capabilities (eg. temporary bonus).</li>
+            <li>Isolation — Contrarily to state machines or hard-coded scripts that quickly become an unmanageable mess tangled in transitions, GOAP actions are neatly isolated. They don't directly know about each other since their relationships are expressed in terms of preconditions and effects on the agent's state.</li>
+            <li>Variety — Agents naturally plan their paths of action to reach a given goal depending on their state, which can be done in different manners as long as the goal is satisfied thus diverse and unexpected plans may emerge.</li>
+            <li>Modularity — It is easy to design different profiles by equipping agents with different sets of actions. They can also be added/removed dynamically to sporadically provide temporary capabilities (eg. bonus).</li>
         </ul>
 
-        <h5>Limitations/questions TODO</h2>
+        <h5>Limitations/Questions</h2>
         <ul>
-            <li>Parallel actions -- </li>
-            <li>Coordinated actions -- </li>
-            <li>Complex states -- </li>
+            <li>Parallel actions — Since the computed plans are linear sequences of actions, there is no direct way to allow users to perform several of them in parallel (eg. walking & firing simultaneously) nor to reach multiple goals.</li>
+            <li>Coordinated actions — It is unclear how coordination between several agents could be achieved with this approach. One possibility could be to generate high-level plans for a whole group and leverage other techniques for governing the behavior of the individual agents of the group, such as flocking.</li>
+            <li>Complex states — States seem to be traditionally represented as sets of boolean flags but more expressive attributes might be necessary to create complex behaviors. For instance, the goal of an agent might be to obtain a specific count of a given resource or to go to a given position.</li>
         </ul>
 
-        <h5>References TODO</h2>
+        <h5>References</h2>
         <ul>
-            <li>Orkin</li>
-            <li>Tomb Raider</li>
+            <li>Jeff Orkin, <a href="http://alumni.media.mit.edu/~jorkin/gdc2006_orkin_jeff_fear.pdf"><i>Three States and a Plan: The A.I. of F.E.A.R.</i></a>, GDC 2006. (also see <a href="http://alumni.media.mit.edu/~jorkin/goap.html">Jeff Orkin's webpage)</a></li>
+            <li>Chris Conway, <a href="http://www.gdcvault.com/play/1022020/Goal-Oriented-Action-Planning-Ten"><i>  Goal-Oriented Action Planning: Ten Years Old and No Fear!</i></a>, GDC 2015.</li>
         </ul>
     </div>
 
     <div id="game"></div>
-    <div id="graph"></div>
+    <div id="graph_miner" class="graph">Miner</div>
+    <div id="graph_chef" class="graph">Chef</div>
+    <div id="graph_gourmetminer" class="graph">Polyvalent agent</div>
 
     <script type="text/javascript">
 
@@ -77,13 +81,9 @@
     window.onload = function() {
 
         new World((world) => {
-
-            let guy = world.agent(Test);
-
-            let goal = new State();
-            goal['hasFood'] = true;
-
-            guy.plan = Planner.compute(guy, goal);
+            world.agent(Miner, 'graph_miner');
+            world.agent(Chef, 'graph_chef');
+            world.agent(GourmetMiner, 'graph_gourmetminer');
         });
 
     };

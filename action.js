@@ -9,8 +9,14 @@ class Action {
         this.effects = {};
     }
 
-    enter() {}
-    exit() {}
+    enter() {
+        this.agent.text2.setText(`(${this.toString()})`);
+    }
+
+    exit() {
+        this.agent.text2.setText('');
+    }
+
     update() {}
     over() { return false; }
 
@@ -29,28 +35,38 @@ class Action {
 }
 
 class MoveAction extends Action {
-    constructor(agent, position) {
+    constructor(agent) {
         super(agent);
 
         this.target = null;
+        this.speed = 15;
     }
 
     enter() {
+        super.enter();
+
         this.targetPos = new Phaser.Point(this.target.x * tileSize, this.target.y * tileSize);
-        this.speed = Phaser.Point.distance(this.agent.sprite.position, this.targetPos) * 10;
+
+        let duration = Phaser.Point.distance(this.agent.sprite.position, this.targetPos) * this.speed * (1 + Math.random() * 0.3);
+
+        let target = {
+            x: this.target.x * tileSize,
+            y: this.target.y * tileSize
+        };
+        let pos = {
+            x: this.agent.sprite.x + (target.x - this.agent.sprite.x) * 0.95,
+            y: this.agent.sprite.y + (target.y - this.agent.sprite.y) * 0.95
+        };
 
         this.agent.world.game.add.tween(this.agent.sprite)
-            .to({
-                x: this.target.x * tileSize,
-                y: this.target.y * tileSize
-            },
-            this.speed,
-            Phaser.Easing.Linear.None,
-            true);
+            .to(pos,
+                duration,
+                Phaser.Easing.Linear.None,
+                true);
     }
 
     over() {
-        return Phaser.Point.distance(this.agent.sprite.position, this.targetPos) < 10;
+        return Phaser.Point.distance(this.agent.sprite.position, this.targetPos) < 40;
     }
 }
 
@@ -88,31 +104,24 @@ class BuyFood extends MoveAction {
     }
 }
 
-class GetIngredients extends Action {
+class GoToRestaurant extends MoveAction {
     constructor(agent) {
         super(agent);
 
+        this.target = targets.restaurant;
+
+        this.preconditions['atRestaurant'] = false;
+        this.effects['atRestaurant'] = true;
+    }
+}
+
+class GetIngredients extends MoveAction {
+    constructor(agent) {
+        super(agent);
+
+        this.target = targets.ingredients;
+
         this.effects['hasIngredients'] = true;
-    }
-}
-
-class CookFood extends Action {
-    constructor(cost) {
-        super(cost);
-
-        this.preconditions['hasIngredients'] = true;
-        this.effects['hasIngredients'] = false;
-        this.effects['hasFood'] = true;
-    }
-}
-
-class SellFood extends Action {
-    constructor(cost) {
-        super(cost);
-
-        this.preconditions['hasFood'] = true;
-        this.effects['hasFood'] = false;
-        this.effects['hasMoney'] = true;
     }
 }
 
@@ -122,25 +131,79 @@ class GoHome extends MoveAction {
 
         this.target = targets.home;
 
+        this.preconditions['isHome'] = false;
         this.effects['isHome'] = true;
     }
 }
 
-class EatFood extends Action {
-    constructor(cost) {
-        super(cost);
+class TakeAWalk extends MoveAction {
+    constructor(agent) {
+        super(agent);
+
+        this.speed = 25;
+
+        this.effects['isBored'] = false;
+    }
+
+    enter() {
+        this.target = {
+            x: Math.floor(Math.random() * size),
+            y: Math.floor(Math.random() * size)
+        }
+
+        super.enter();
+    }
+}
+
+class WaitAction extends Action {
+    constructor(agent) {
+        super(agent);
+
+        this.baseDuration = 2000;
+    }
+
+    enter() {
+        super.enter();
+
+        this.duration = this.baseDuration * (1 + Math.random() * 0.3);
+        this.start = new Date().getTime();
+    }
+
+    over() {
+        return new Date().getTime() - this.start >= this.duration;
+    }
+}
+
+class EatFood extends WaitAction {
+    constructor(agent) {
+        super(agent);
 
         this.preconditions['hasFood'] = true;
         this.effects['hasFood'] = false;
         this.effects['isHungry'] = false;
     }
+
+    exit() {
+        this.agent.hunger = 0;
+    }
 }
 
-class Sleep extends Action {
+class Sleep extends WaitAction {
     constructor(cost) {
         super(cost);
 
         this.preconditions['isHome'] = true;
         this.effects['isTired'] = false;
+    }
+}
+
+class CookFood extends WaitAction {
+    constructor(cost) {
+        super(cost);
+
+        this.preconditions['hasIngredients'] = true;
+        this.preconditions['atRestaurant'] = true;
+        this.effects['hasIngredients'] = false;
+        this.effects['hasFood'] = true;
     }
 }

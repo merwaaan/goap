@@ -12,9 +12,13 @@ class Planner {
             goal: '.goal',
             directed: true
         });
-        aStar.path.select();
 
-        return new Plan(aStar.path);
+        if (!aStar.found)
+            return null;
+
+        aStar.path.select();
+        aStar.path.unselectify();
+        return new Plan(agent, goal, aStar.path);
     }
 
     static buildGraph(agent, goal) {
@@ -101,11 +105,12 @@ class Planner {
 
         // Setup the graph
         let graph = cytoscape({
-            container: document.querySelector('#graph'),
+            container: document.querySelector('#' + agent.graphId),
             layout: {
-                name: 'springy',
-                repulsion: 300
+                name: 'dagre',
+                rankSep: 90
             },
+            userZoomingEnabled: false,
             style: [{
                 selector: '.start, .goal',
                 style: {

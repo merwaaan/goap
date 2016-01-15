@@ -4,9 +4,11 @@ const size = 15;
 const tileSize = 32;
 
 const targets = {
-    minerals: {x: 5, y: 5},
+    minerals: {x: 1, y: 2},
     shop: {x: 13, y: 3},
     restaurant: {x: 12, y: 12},
+    ingredients: {x: 3, y: 13},
+    home: {x: 7, y: 7}
 };
 
 class World {
@@ -47,17 +49,27 @@ class World {
             targets.restaurant.x * tileSize,
             targets.restaurant.y * tileSize,
             'sheet',
+            7);
+        this.game.add.sprite(
+            targets.ingredients.x * tileSize,
+            targets.ingredients.y * tileSize,
+            'sheet',
             5);
+        this.game.add.sprite(
+            targets.home.x * tileSize,
+            targets.home.y * tileSize,
+            'sheet',
+            6);
 
         this.createFunc.call(null, this);
     }
 
     update() {
-        this.agents.forEach(agent => agent.update());
+        this.agents.forEach(agent => agent.update(1000/this.game.time.elapsed));
     }
 
-    agent(Agent) {
-        let agent = new Agent(this);
+    agent(Agent, graphId) {
+        let agent = new Agent(this, graphId);
         this.agents.push(agent);
         return agent;
     }
