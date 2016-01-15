@@ -1,9 +1,8 @@
 "use strict";
 
 class Action {
-    constructor(agent, cost) {
+    constructor(agent) {
         this.agent = agent;
-        this.cost = cost;
 
         this.preconditions = {};
         this.effects = {};
@@ -17,8 +16,9 @@ class Action {
         this.agent.text2.setText('');
     }
 
-    update() {}
     over() { return false; }
+
+    update() {}
 
     matches(state) {
         state = state || this.agent.fullState();
@@ -39,7 +39,7 @@ class MoveAction extends Action {
         super(agent);
 
         this.target = null;
-        this.speed = 15;
+        this.speed = 10;
     }
 
     enter() {
@@ -189,17 +189,21 @@ class EatFood extends WaitAction {
 }
 
 class Sleep extends WaitAction {
-    constructor(cost) {
-        super(cost);
+    constructor(agent) {
+        super(agent);
 
         this.preconditions['isHome'] = true;
         this.effects['isTired'] = false;
     }
+
+    exit() {
+        this.agent.fatigue = 0;
+    }
 }
 
 class CookFood extends WaitAction {
-    constructor(cost) {
-        super(cost);
+    constructor(agent) {
+        super(agent);
 
         this.preconditions['hasIngredients'] = true;
         this.preconditions['atRestaurant'] = true;

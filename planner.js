@@ -10,14 +10,25 @@ class Planner {
         let aStar = graph.elements().aStar({
             root: '.start',
             goal: '.goal',
-            directed: true
+            directed: true,
+            weight: (edge) => {
+                // Randomize the cost of move actions for our polyvalent agent.
+                // Ideally, we should use procedural evaluations that assign costs
+                // depending on the agent's and target's positions but that will do
+                // the trick for this prototype.
+                let action = edge.data('action');
+                if (agent instanceof GourmetMiner && action !== undefined && action instanceof MoveAction)
+                    return Math.random() * 10;
+                return 0;
+            }
         });
 
         if (!aStar.found)
             return null;
 
         aStar.path.select();
-        aStar.path.unselectify();
+        graph.elements().unselectify();
+
         return new Plan(agent, goal, aStar.path);
     }
 
@@ -110,7 +121,7 @@ class Planner {
                 name: 'dagre',
                 rankSep: 90
             },
-            userZoomingEnabled: false,
+            //userZoomingEnabled: false,
             style: [{
                 selector: '.start, .goal',
                 style: {

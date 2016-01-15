@@ -20,11 +20,12 @@ class Agent {
     }
 }
 
-class Worker extends Agent {
+class Guy extends Agent {
     constructor(world, spriteId, graphId) {
         super(world);
 
         this.graphId = graphId;
+        this.computing = false;
 
         // Common action set
         this.actions.push(
@@ -92,12 +93,12 @@ class Worker extends Agent {
         // Change the goal depending on the vitals
         // (We wait for the current plan to be completed but ideally
         // it should be interrupted depending on the priority)
-        if (this.plan == null) {
-            if (this.hunger >= 100 && this.plan == null) {
+        if (this.plan === null && this.computing === false) {
+            if (this.hunger >= 100 && this.plan === null) {
                 this.state['isHungry'] = true;
                 this.setGoal('isHungry', false);
             }
-            else if (this.fatigue >= 100 && this.plan == null) {
+            else if (this.fatigue >= 100 && this.plan === null) {
                 this.state['isTired'] = true;
                 this.setGoal('isTired', false);
             }
@@ -123,7 +124,7 @@ class Worker extends Agent {
     }
 }
 
-class Miner extends Worker {
+class Miner extends Guy {
     constructor(world, graphId) {
         super(world, 0, graphId);
 
@@ -134,7 +135,7 @@ class Miner extends Worker {
     }
 }
 
-class Chef extends Worker {
+class Chef extends Guy {
     constructor(world, graphId) {
         super(world, 1, graphId);
 
@@ -145,7 +146,7 @@ class Chef extends Worker {
     }
 }
 
-class GourmetMiner extends Worker {
+class GourmetMiner extends Guy {
     constructor(world, graphId) {
         super(world, 2, graphId);
 
