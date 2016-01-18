@@ -34,7 +34,7 @@
             text-decoration: underline;
         }
         #summary {
-            width: 60%;
+            width: 80%;
             text-align: justify;
         }
         .graph {
@@ -49,14 +49,14 @@
     <div id="summary">
         <h3>Goal-Oriented Action Planning (GOAP)</h3>
 
-        <p>GOAP is an AI technique for building a plan of action to be executed by an agent, starting from its <b>current state</b> and leading to a <b>goal state</b>. The state of the agent is a set of labels (eg. <i>isHungry</i>, <i>hasMoney</i>, ...). The agent is given a set of actions (eg. <i>BuyFood</i>) that each have <b>preconditions</b> stating which state is required to conduct the action (eg. <i>hasMoney</i>) as well as <b>effects</b> stating how it will alter the agent's state (eg. <i>~isHungry</i> ∧ <i>~hasMoney</i>).</p>
+        <p>GOAP is an AI technique for building a plan of action to be executed by an agent, starting from its <b>current state</b> and leading to a <b>goal state</b>. The state of the agent is a set of labels (eg. <i>isHungry</i>, <i>hasMoney</i>, ...). The agent is given a set of <b>actions</b> (eg. <i>BuyFood</i>) that each have <b>preconditions</b> stating which state is required to enter the action (eg. <i>hasMoney</i>) as well as <b>effects</b> determining how it will alter the agent's state (eg. <i>~isHungry</i> ∧ <i>~hasMoney</i>).</p>
 
-        <p>We obtain a plan by building a directed graph in which nodes represent states and edges represent actions. Two states are connected by an action if the effects of the first one match the preconditions of the second one. Several paths can lead to the goal state and we look for the shortest one using a search algorithm such as A*. Different costs can be associated with the actions so that various plans will be produced depending on the state of the agent and the context (distance, threat proximity, ...). Although the structure of the produced graph is similar to state machines or behavior trees, the graph only exists briefly when a new plan must be decided. Only the shortest path (a linear sequence of action) persists and it is then executed step by step by the agent until completion.</p>
+        <p>We obtain a plan by building a directed graph in which nodes represent states and edges represent actions. An action connects two states if its preconditions match the first state and its effects match the second one. Several paths can lead to the goal state and we look for the shortest one using a search algorithm such as A*. Different costs can be associated with the actions so that various plans will be produced depending on the state of the agent and the context (distance, threat proximity, ...). Although the structure of the produced graph is similar to state machines or behavior trees, the graph only exists briefly when a new plan must be decided. Only the shortest path (a linear sequence of actions) persists and it is then executed step by step by the agent until completion.</p>
 
         <h4>Benefits</h4>
 
         <ul>
-            <li>Isolation — Contrarily to state machines or hard-coded scripts that quickly become an tangled in transitions, GOAP actions are neatly isolated. They don't directly know about each other since their relationships are expressed in terms of preconditions and effects on the agent's state.</li>
+            <li>Isolation — Contrarily to state machines or hard-coded scripts that quickly become tangled in transitions, GOAP actions are neatly isolated. They don't directly know about each other since their relationships are expressed in terms of preconditions and effects on the agent's state.</li>
             <li>Variety — Agents naturally plan their paths of action to reach a given goal depending on their state, which can be done in different manners as long as the goal is satisfied thus diverse and unexpected plans may emerge.</li>
             <li>Modularity — It is easy to design different profiles by equipping agents with different sets of actions. They can also be added/removed dynamically to sporadically provide temporary capabilities (eg. bonus).</li>
         </ul>
@@ -64,9 +64,9 @@
         <h4>Limitations/Questions</h4>
 
         <ul>
-            <li>Parallel actions — Since the computed plans are linear sequences of actions, there is no direct way for agents to perform several of them in parallel (eg. walking & firing simultaneously) nor to reach multiple goals.</li>
-            <li>Coordinated actions — It is unclear how coordination between several agents could be achieved with this approach. One possibility could be to generate high-level plans for a whole group and leverage other techniques for governing the behavior of the individual agents of the group, such as flocking or sub-plans.</li>
-            <li>Complex states — States seem to be traditionally represented as sets of boolean flags but more expressive attributes might be necessary to create complex behaviors. For instance, the goal of an agent might be to obtain a specific count of a given resource or to go to a given position. Representing complex states and expressing complex goals seem to be the main limitations of GOAP.</li>
+            <li>Parallel actions — Since the computed plans are linear sequences of actions, there is no direct way for agents to perform several of them in parallel (eg. walking and firing simultaneously) nor to reach multiple goals.</li>
+            <li>Coordinated actions — It is unclear how coordination between several agents could be achieved with this approach. One possibility could be to generate high-level plans for a whole group and leverage other techniques for governing the behavior of the individual agents of the group, such as flocking or hierarchical planning.</li>
+            <li>Complex states — States seem to be traditionally represented as sets of boolean flags but more expressive attributes might be necessary to create complex behaviors. For instance, the goal of an agent might be to obtain a specific count of a given resource or to go to a given position. This seems to be the main limitations of GOAP.</li>
         </ul>
 
         <h4>References</h4>
@@ -79,18 +79,18 @@
 
         <h4>Demo</h4>
 
-        <p>In the demo below, the goals of the agents are not to ge hungry, tired or bored. Their current goal is chosen by a higher level system depending on their internal state (scalar values increasing at various states). The state of an agent contains the following attributes: <i>isHungry</i>, <i>hasIngredients</i>, <i>hasMoney</i>, <i>hasFood</i>, <i>isHome</i>, <i>isTired</i> and <i>isBored</i>. Several actions are available: <i>GetIngredients</i>, <i>CookFood</i> (requires ingredients), <i>Mine</i> (gives minerals), <i>SellMinerals</i> (remove minerals, gives money), <i>BuyFood</i> (requires money, gives food), <i>GoHome</i>, <i>Eat</i> and <i>Sleep</i>. A plan of action is then computed with GOAP and executed. There are three agents with different action sets: a miner (mines, sells his wares, buy food), a cook (gets ingredient, cook), and a polyvalent agent with all the actions.</p>
+        <p>In the demo below, the global objective of the agents is to avoid hunger and fatigue. Their current goals are chosen by a high-level module depending on increasing scalar values representing those properties. The state of an agent contains the following attributes: <i>isHungry</i>, <i>hasIngredients</i>, <i>hasMoney</i>, <i>hasFood</i>, <i>isHome</i>, <i>isTired</i> and <i>isBored</i>. Several actions are available: <i>GetIngredients</i>, <i>CookFood</i> (requires ingredients), <i>Mine</i> (gives minerals), <i>SellMinerals</i> (requires minerals, gives money), <i>BuyFood</i> (requires money, gives food), <i>GoHome</i>, <i>Eat</i>, and <i>Sleep</i>. When agents are neither hungry nor tired, they just take walks. There are three agents with different action sets: a miner (mines, sells his wares, buy food), a cook (gets ingredient, cook), and a polyvalent agent with all the actions. Each agent's plan is displayed below.</p>
     </div>
 
     <div id="game"></div>
 
-    <h5>Miner</h5>
+    <h5>Miner (green)</h5>
     <div id="graph_miner" class="graph"></div>
 
-    <h5>Chef</h5>
+    <h5>Chef (pink)</h5>
     <div id="graph_chef" class="graph"></div>
 
-    <h5>Gourmet miner</h5>
+    <h5>Gourmet miner (orange)</h5>
     <div id="graph_gourmetminer" class="graph"></div>
 
     <script type="text/javascript">

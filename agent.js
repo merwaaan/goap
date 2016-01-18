@@ -129,7 +129,7 @@ class Miner extends Guy {
         super(world, 0, graphId);
 
         this.actions.push(
-            new GetMinerals(this),
+            new Mine(this),
             new SellMinerals(this),
             new BuyFood(this));
     }
@@ -151,7 +151,7 @@ class GourmetMiner extends Guy {
         super(world, 2, graphId);
 
         this.actions.push(
-            new GetMinerals(this),
+            new Mine(this),
             new SellMinerals(this),
             new BuyFood(this),
             new GetIngredients(this),

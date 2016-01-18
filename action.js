@@ -70,7 +70,7 @@ class MoveAction extends Action {
     }
 }
 
-class GetMinerals extends MoveAction {
+class Mine extends MoveAction {
     constructor(agent) {
         super(agent);
 
